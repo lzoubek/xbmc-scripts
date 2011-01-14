@@ -105,6 +105,9 @@ parser.add_option('-u','--username',dest='username',default=None,help='authentic
 parser.add_option('-p','--password',dest='password',default=None,help='authentication password')
 parser.add_option('-s','--source',dest='source',default='http://localhost:8080/jsonrpc',help='source URI of XBMC [default %default]')
 (options,args) = parser.parse_args()
+if not os.path.exists(options.output):
+	print 'Output dir %s does not exist!'%options.output
+	sys.exit(1)
 print 'Getting movies'
 reader = RPCClient(options.source,options.username,options.password)
 movies = reader.get_movies()
