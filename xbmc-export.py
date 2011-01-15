@@ -84,18 +84,20 @@ class RPCClient(object):
 			seasons = self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetSeasons\",\"params\":{\"tvshowid\":'+showid+'}, \"id\":1})')
 			data.append({'label':show['label'],'count': len(seasons['seasons'])})
 		return data
+def csfd_link(moviename):
+	return  """<a target="_blank" href="http://csfd.cz/hledani-filmu-hercu-reziseru-ve-filmove-databazi/?search=%s">%s</a>"""%(moviename,moviename)
 def parse_movies(data):
 	movies = []
 	data['movies'] = sorted(data['movies'],key=itemgetter('label'))
 	for movie in data['movies']:
-		m = MOVIE % (len(movies)+1,movie['label'],os.path.basename(movie['file']))
+		m = MOVIE % (len(movies)+1,csfd_link(movie['label']),os.path.basename(movie['file']))
 		movies.append(m)
 	return movies
 def parse_series(data):
 	series = []
 	data = sorted(data,key=itemgetter('label'))
 	for show in data:
-		s = TVSHOW % (len(series)+1,show['label'],show['count'])
+		s = TVSHOW % (len(series)+1,csfd_link(show['label']),show['count'])
 		series.append(s)
 	return series
 usage='%prog [options]'
