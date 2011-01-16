@@ -69,7 +69,13 @@ ul.tabbernav li.tabberactive a:hover
  background: white;
  border-bottom: 1px solid white;
 }
-
+th {
+    background-color: #ccccff;
+    text-align: left;
+}
+tr {
+    background-color: #fffddd;
+    }
 /*--------------------------------------------------
   .tabbertab = the tab content
   Add style only after the tabber interface is set up (.tabberlive)

@@ -15,15 +15,54 @@ HTML="""
 	<div class="tabber"> 
 		<div class="tabbertab">
 		<h1>All movies</h1>
-		<table>%s</table>
+		<table>
+		<thead>
+		<tr>
+			<th>Index</th>
+			<th>Name</th>
+			<th>Year</th>
+			<th>Genre</th>
+			<th>File</th>
+		</tr>
+		<thead>
+		<tbody>
+		%s
+		</tbody>
+		</table>
 		</div>
 		<div class="tabbertab"> 
     	        <h1>Recently added  movies</h1> 
-			<table>%s</table>
+		<table>
+		<thead>
+		<tr>
+			<th>Index</th>
+			<th>Name</th>
+			<th>Year</th>
+			<th>Genre</th>
+			<th>File</th>
+		</tr>
+		<thead>
+		<tbody>
+		%s
+		</tbody>
+		</table>
+
 		</div>
 		<div class="tabbertab">
 		<h1>Series</h1>
-			<table>%s</table>
+		<table>
+		<thead>
+		<tr>
+			<th>Index</th>
+			<th>Name</th>
+			<th>Seasons</th>
+		</tr>
+		<thead>
+		<tbody>
+		%s
+		</tbody>
+		</table>
+
 		</div>
 	</div>
 </body>
@@ -34,13 +73,15 @@ MOVIE="""
 	<td>%i</td>
 	<td><strong>%s</strong></td>
 	<td>%s</td>
+	<td>%s</td>
+	<td>%s</td>
 </tr>
 """
 TVSHOW="""
 <tr>
 	<td>%i</td>
 	<td><strong>%s</strong></td>
-	<td>%s seasons</td>
+	<td>%s</td>
 </tr>
 """
 RESOURCES=''
@@ -72,11 +113,13 @@ class RPCClient(object):
 			
 	def _decode(self,data):
 		return json.loads(data.decode('utf-8','ignore'))['result']
+	def _get_params(self):
+		return ' ,\"params\": {\"fields\" :[\"rating\",\"year\",\"genre\",\"duration\"]}'
 	def get_movies(self):
-		return self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetMovies\", \"id\":1})')
+		return self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetMovies\", \"id\":1'+self._get_params()+'}')
 		
 	def get_recently_added_movies(self):
-		return self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetRecentlyAddedMovies\", \"id\":1})')
+		return self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetRecentlyAddedMovies\", \"id\":1'+self._get_params()+'}')
 	def get_tv_shows(self):
 		data = []
 		for show in  self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetTVShows\", \"id\":1})')['tvshows']:
@@ -95,12 +138,20 @@ def imdb_link(moviename,title):
 	return  """<a target="_blank" href="http://www.imdb.com/find?s=all&q=%s">%s</a>"""%(moviename,title)
 def link(moviename):
 	return '%s (%s) (%s)'%(moviename,csfd_link(moviename,'CSFD'),imdb_link(moviename,'IMDB'))
+
+def update_fields(item,fields):
+	for field in fields:
+		if not field in item:
+			item[field]=''
+	return item
+
 def parse_movies(data,sort=True):
 	movies = []
 	if sort:
 		data['movies'] = sorted(data['movies'],key=itemgetter('label'))
 	for movie in data['movies']:
-		m = MOVIE % (len(movies)+1,link(movie['label']),os.path.basename(movie['file']))
+		movie = update_fields(movie,['year','genre','file','label'])
+		m = MOVIE % (len(movies)+1,link(movie['label']),movie['year'],movie['genre'],os.path.basename(movie['file']))
 		movies.append(m)
 	return movies
 def parse_series(data):
