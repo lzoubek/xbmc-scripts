@@ -14,11 +14,11 @@ HTML="""
 	<p>Generated %s</p>
 	<div class="tabber"> 
 		<div class="tabbertab">
-		<h1>Recently added movies</h1>
+		<h1>All movies</h1>
 		<table>%s</table>
 		</div>
 		<div class="tabbertab"> 
-    	        <h1>All movies</h1> 
+    	        <h1>Recently added  movies</h1> 
 			<table>%s</table>
 		</div>
 		<div class="tabbertab">
@@ -84,20 +84,30 @@ class RPCClient(object):
 			seasons = self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetSeasons\",\"params\":{\"tvshowid\":'+showid+'}, \"id\":1})')
 			data.append({'label':show['label'],'count': len(seasons['seasons'])})
 		return data
-def csfd_link(moviename):
-	return  """<a target="_blank" href="http://csfd.cz/hledani-filmu-hercu-reziseru-ve-filmove-databazi/?search=%s">%s</a>"""%(moviename,moviename)
-def parse_movies(data):
+def filter_for_link(string):
+	return string.replace('\"','')
+def csfd_link(moviename,title):
+	moviename = filter_for_link(moviename)
+	return  """<a target="_blank" href="http://csfd.cz/hledani-filmu-hercu-reziseru-ve-filmove-databazi/?search=%s">%s</a>"""%(moviename,title)
+
+def imdb_link(moviename,title):
+	moviename = filter_for_link(moviename)
+	return  """<a target="_blank" href="http://www.imdb.com/find?s=all&q=%s">%s</a>"""%(moviename,title)
+def link(moviename):
+	return '%s (%s) (%s)'%(moviename,csfd_link(moviename,'CSFD'),imdb_link(moviename,'IMDB'))
+def parse_movies(data,sort=True):
 	movies = []
-	data['movies'] = sorted(data['movies'],key=itemgetter('label'))
+	if sort:
+		data['movies'] = sorted(data['movies'],key=itemgetter('label'))
 	for movie in data['movies']:
-		m = MOVIE % (len(movies)+1,csfd_link(movie['label']),os.path.basename(movie['file']))
+		m = MOVIE % (len(movies)+1,link(movie['label']),os.path.basename(movie['file']))
 		movies.append(m)
 	return movies
 def parse_series(data):
 	series = []
 	data = sorted(data,key=itemgetter('label'))
 	for show in data:
-		s = TVSHOW % (len(series)+1,csfd_link(show['label']),show['count'])
+		s = TVSHOW % (len(series)+1,link(show['label']),show['count'])
 		series.append(s)
 	return series
 usage='%prog [options]'
@@ -122,9 +132,9 @@ try:
 	print 'Writing output to %s' % options.output
 	f = open(options.output+'/index.html','w')
 	movies = parse_movies(movies)
-	recent_movies = parse_movies(recent_movies)
+	recent_movies = parse_movies(recent_movies,sort=False)
 	tv_shows = parse_series(tv_shows)
-	html = HTML % (datetime.datetime.now().strftime('%d. %m. %y at %H:%M:%S'),''.join(recent_movies),''.join(movies),''.join(tv_shows))
+	html = HTML % (datetime.datetime.now().strftime('%d. %m. %y at %H:%M:%S'),''.join(movies),''.join(recent_movies),''.join(tv_shows))
 	f.write(html.encode('ascii','ignore'))
 	print 'Done'
 	print 'Copying resources'
