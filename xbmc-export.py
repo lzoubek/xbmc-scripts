@@ -176,7 +176,9 @@ reader = RPCClient(options.source,options.username,options.password)
 movies = reader.get_movies()
 if movies == None:
 	sys.exit(0)
+print 'Getting recently added'
 recent_movies = reader.get_recently_added_movies()
+print 'Getting shows'
 tv_shows = reader.get_tv_shows()
 
 try:
