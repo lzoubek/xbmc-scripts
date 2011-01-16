@@ -131,11 +131,11 @@ def filter_for_link(string):
 	return string.replace('\"','')
 def csfd_link(moviename,title):
 	moviename = filter_for_link(moviename)
-	return  """<a target="_blank" href="http://csfd.cz/hledani-filmu-hercu-reziseru-ve-filmove-databazi/?search=%s">%s</a>"""%(moviename,title)
+	return  """<a target="_blank" href="%shttp://csfd.cz/hledani-filmu-hercu-reziseru-ve-filmove-databazi/?search=%s">%s</a>"""%(ANONYM_TO,moviename,title)
 
 def imdb_link(moviename,title):
 	moviename = filter_for_link(moviename)
-	return  """<a target="_blank" href="http://www.imdb.com/find?s=all&q=%s">%s</a>"""%(moviename,title)
+	return  """<a target="_blank" href="%shttp://www.imdb.com/find?s=all&q=%s">%s</a>"""%(ANONYM_TO,moviename,title)
 def link(moviename):
 	return '%s (%s) (%s)'%(moviename,csfd_link(moviename,'CSFD'),imdb_link(moviename,'IMDB'))
 
@@ -161,16 +161,21 @@ def parse_series(data):
 		s = TVSHOW % (len(series)+1,link(show['label']),show['count'])
 		series.append(s)
 	return series
+
+ANONYM_TO='http://anonym.to/?'
 usage='%prog [options]'
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('-o','--output',dest='output',default='.',metavar='DIR',help='write output to DIR')
 parser.add_option('-u','--username',dest='username',default=None,help='authentication user')
 parser.add_option('-p','--password',dest='password',default=None,help='authentication password')
 parser.add_option('-s','--source',dest='source',default='http://localhost:8080/jsonrpc',help='source URI of XBMC [default %default]')
+parser.add_option('-a','--anonymize',dest='anonymize',action='store_true',default=False,help='enable anonymizing links via http://anonym.to')
 (options,args) = parser.parse_args()
 if not os.path.exists(options.output):
 	print 'Output dir %s does not exist!'%options.output
 	sys.exit(1)
+if not options.anonymize:
+	ANONYM_TO=''
 print 'Getting movies'
 reader = RPCClient(options.source,options.username,options.password)
 movies = reader.get_movies()
