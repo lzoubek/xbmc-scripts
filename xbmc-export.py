@@ -8,6 +8,7 @@ HTML="""
 <head>
 	<script type="text/javascript" src="tabber.js"></script> 
 	<script type="text/javascript" src="jquery.tools.js"></script> 
+	<script type="text/javascript" src="sortable.js"></script> 
 	<link rel="stylesheet" type="text/css" href="tabber.css" />
 </head>
 <body>
@@ -15,7 +16,7 @@ HTML="""
 	<div class="tabber"> 
 		<div class="tabbertab">
 		<h1>All movies</h1>
-		<table>
+		<table class="sortable" id="all-movies">
 		<thead>
 		<tr>
 			<th>Index</th>
@@ -32,7 +33,7 @@ HTML="""
 		</div>
 		<div class="tabbertab"> 
     	        <h1>Recently added  movies</h1> 
-		<table>
+		<table class="sortable" id="recent-movies">
 		<thead>
 		<tr>
 			<th>Index</th>
@@ -50,7 +51,7 @@ HTML="""
 		</div>
 		<div class="tabbertab">
 		<h1>Series</h1>
-		<table>
+		<table class="sortable" id="series">
 		<thead>
 		<tr>
 			<th>Index</th>
@@ -196,6 +197,10 @@ try:
 	f.write(html.encode('ascii','ignore'))
 	print 'Done'
 	print 'Copying resources'
+	shutil.copy(RESOURCES+'resources/sortable.js',options.output)
+	shutil.copy(RESOURCES+'resources/arrow-up.gif',options.output)
+	shutil.copy(RESOURCES+'resources/arrow-down.gif',options.output)
+	shutil.copy(RESOURCES+'resources/arrow-none.gif',options.output)
 	shutil.copy(RESOURCES+'resources/tabber.js',options.output)
 	shutil.copy(RESOURCES+'resources/tabber.css',options.output)
 	shutil.copy(RESOURCES+'resources/jquery.tools.js',options.output)
