@@ -23,6 +23,7 @@ HTML="""
 			<th>Name</th>
 			<th>Year</th>
 			<th>Genre</th>
+			<th>Rating</th>
 			<th>File</th>
 		</tr>
 		<thead>
@@ -40,6 +41,7 @@ HTML="""
 			<th>Name</th>
 			<th>Year</th>
 			<th>Genre</th>
+			<th>Rating</th>
 			<th>File</th>
 		</tr>
 		<thead>
@@ -57,6 +59,9 @@ HTML="""
 			<th>Index</th>
 			<th>Name</th>
 			<th>Seasons</th>
+			<th>Year</th>
+			<th>Genre</th>
+			<th>Rating</th>
 		</tr>
 		<thead>
 		<tbody>
@@ -76,12 +81,16 @@ MOVIE="""
 	<td>%s</td>
 	<td>%s</td>
 	<td>%s</td>
+	<td>%s</td>
 </tr>
 """
 TVSHOW="""
 <tr>
 	<td>%i</td>
 	<td><strong>%s</strong></td>
+	<td>%s</td>
+	<td>%s</td>
+	<td>%s</td>
 	<td>%s</td>
 </tr>
 """
@@ -123,10 +132,11 @@ class RPCClient(object):
 		return self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetRecentlyAddedMovies\", \"id\":1'+self._get_params()+'}')
 	def get_tv_shows(self):
 		data = []
-		for show in  self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetTVShows\", \"id\":1})')['tvshows']:
+		for show in  self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetTVShows\", \"id\":1'+self._get_params()+'}')['tvshows']:
+			update_fields(show,['rating','year','genre'])
 			showid = str(show['tvshowid'])
 			seasons = self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetSeasons\",\"params\":{\"tvshowid\":'+showid+'}, \"id\":1})')
-			data.append({'label':show['label'],'count': len(seasons['seasons'])})
+			data.append({'label':show['label'],'count': len(seasons['seasons']),'rating':'%.2f'%show['rating'],'year':show['year'],'genre':show['genre']})
 		return data
 def filter_for_link(string):
 	return string.replace('\"','')
@@ -151,15 +161,16 @@ def parse_movies(data,sort=True):
 	if sort:
 		data['movies'] = sorted(data['movies'],key=itemgetter('label'))
 	for movie in data['movies']:
-		movie = update_fields(movie,['year','genre','file','label'])
-		m = MOVIE % (len(movies)+1,link(movie['label']),movie['year'],movie['genre'],os.path.basename(movie['file']))
+		movie = update_fields(movie,['year','genre','file','label','rating'])
+		movie['rating'] = '%.2f' % movie['rating']
+		m = MOVIE % (len(movies)+1,link(movie['label']),movie['year'],movie['genre'],movie['rating'],os.path.basename(movie['file']))
 		movies.append(m)
 	return movies
 def parse_series(data):
 	series = []
 	data = sorted(data,key=itemgetter('label'))
 	for show in data:
-		s = TVSHOW % (len(series)+1,link(show['label']),show['count'])
+		s = TVSHOW % (len(series)+1,link(show['label']),show['count'],show['year'],show['genre'],show['rating'])
 		series.append(s)
 	return series
 
