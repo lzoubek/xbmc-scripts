@@ -1,7 +1,13 @@
 #!/bin/env python
+
+RESOURCES=''
+
+
 import urllib2,cookielib,base64,traceback,json,os,optparse,sys,datetime, shutil
 from urllib import urlencode
 from operator import itemgetter, attrgetter
+
+RESOURCES=os.path.dirname(os.path.abspath(__file__))
 
 HTML=""" 
 <html>
@@ -21,9 +27,11 @@ HTML="""
 		<tr>
 			<th>Index</th>
 			<th>Name</th>
+			<th class="unsortable">Links</th>
 			<th>Year</th>
 			<th>Genre</th>
 			<th>Rating</th>
+			<th>Duration</th>
 			<th>File</th>
 		</tr>
 		<thead>
@@ -39,9 +47,11 @@ HTML="""
 		<tr>
 			<th>Index</th>
 			<th>Name</th>
+			<th class="unsortable">Links</th>
 			<th>Year</th>
 			<th>Genre</th>
 			<th>Rating</th>
+			<th>Duration</th>
 			<th>File</th>
 		</tr>
 		<thead>
@@ -58,6 +68,7 @@ HTML="""
 		<tr>
 			<th>Index</th>
 			<th>Name</th>
+			<th class="unsortable>Links</th>
 			<th>Seasons</th>
 			<th>Year</th>
 			<th>Genre</th>
@@ -82,6 +93,8 @@ MOVIE="""
 	<td>%s</td>
 	<td>%s</td>
 	<td>%s</td>
+	<td>%s</td>
+	<td>%s</td>
 </tr>
 """
 TVSHOW="""
@@ -92,9 +105,9 @@ TVSHOW="""
 	<td>%s</td>
 	<td>%s</td>
 	<td>%s</td>
+	<td>%s</td>
 </tr>
 """
-RESOURCES=''
 class RPCClient(object):
 
 	def __init__(self,uri,user,password):
@@ -148,7 +161,7 @@ def imdb_link(moviename,title):
 	moviename = filter_for_link(moviename)
 	return  """<a target="_blank" href="%shttp://www.imdb.com/find?s=all&q=%s">%s</a>"""%(ANONYM_TO,moviename,title)
 def link(moviename):
-	return '%s (%s) (%s)'%(moviename,csfd_link(moviename,'CSFD'),imdb_link(moviename,'IMDB'))
+	return '%s %s'%(csfd_link(moviename,'CSFD'),imdb_link(moviename,'IMDB'))
 
 def update_fields(item,fields):
 	for field in fields:
@@ -161,26 +174,29 @@ def parse_movies(data,sort=True):
 	if sort:
 		data['movies'] = sorted(data['movies'],key=itemgetter('label'))
 	for movie in data['movies']:
-		movie = update_fields(movie,['year','genre','file','label','rating'])
+		movie = update_fields(movie,['year','genre','file','label','rating','duration'])
 		movie['rating'] = '%.2f' % movie['rating']
-		m = MOVIE % (len(movies)+1,link(movie['label']),movie['year'],movie['genre'],movie['rating'],os.path.basename(movie['file']))
+		movie['duration'] = '%im' % (int(movie['duration'])/60)
+		m = MOVIE % (len(movies)+1,movie['label'],link(movie['label']),movie['year'],movie['genre'],movie['rating'],movie['duration'],os.path.basename(movie['file']))
 		movies.append(m)
 	return movies
 def parse_series(data):
 	series = []
 	data = sorted(data,key=itemgetter('label'))
 	for show in data:
-		s = TVSHOW % (len(series)+1,link(show['label']),show['count'],show['year'],show['genre'],show['rating'])
+		s = TVSHOW % (len(series)+1,show['label'],link(show['label']),show['count'],show['year'],show['genre'],show['rating'])
 		series.append(s)
 	return series
 
 ANONYM_TO='http://anonym.to/?'
-usage='%prog [options]'
+usage="""%prog [options]"""
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('-o','--output',dest='output',default='.',metavar='DIR',help='write output to DIR')
 parser.add_option('-u','--username',dest='username',default=None,help='authentication user')
 parser.add_option('-p','--password',dest='password',default=None,help='authentication password')
 parser.add_option('-s','--source',dest='source',default='http://localhost:8080/jsonrpc',help='source URI of XBMC [default %default]')
+parser.add_option('-l','--links',dest='links',default='http://imdb.com,http://themoviedb.org/search?search=',help='comma-separated list of URIs of services to generate search links for, DEFAULT=%default')
+parser.add_option('-n','--names',dest='names',default='IMDB,TheMovieDB',help='coma-separated list of --links names, DEFAULT=%default')
 parser.add_option('-a','--anonymize',dest='anonymize',action='store_true',default=False,help='enable anonymizing links via http://anonym.to')
 (options,args) = parser.parse_args()
 if not os.path.exists(options.output):
@@ -188,6 +204,13 @@ if not os.path.exists(options.output):
 	sys.exit(1)
 if not options.anonymize:
 	ANONYM_TO=''
+try:
+	links =  options.links.split(',')
+	print links
+except:
+	print 'Unable to parse --links argument'
+	traceback.print_exc()
+	sys.exit(1)
 print 'Getting movies'
 reader = RPCClient(options.source,options.username,options.password)
 movies = reader.get_movies()
@@ -196,8 +219,8 @@ if movies == None:
 print 'Getting recently added'
 recent_movies = reader.get_recently_added_movies()
 print 'Getting shows'
-tv_shows = reader.get_tv_shows()
-
+#tv_shows = reader.get_tv_shows()
+tv_shows = {}
 try:
 	print 'Writing output to %s' % options.output
 	f = open(options.output+'/index.html','w')
@@ -208,13 +231,13 @@ try:
 	f.write(html.encode('ascii','ignore'))
 	print 'Done'
 	print 'Copying resources'
-	shutil.copy(RESOURCES+'resources/sortable.js',options.output)
-	shutil.copy(RESOURCES+'resources/arrow-up.gif',options.output)
-	shutil.copy(RESOURCES+'resources/arrow-down.gif',options.output)
-	shutil.copy(RESOURCES+'resources/arrow-none.gif',options.output)
-	shutil.copy(RESOURCES+'resources/tabber.js',options.output)
-	shutil.copy(RESOURCES+'resources/tabber.css',options.output)
-	shutil.copy(RESOURCES+'resources/jquery.tools.js',options.output)
+	shutil.copy(RESOURCES+'/resources/sortable.js',options.output)
+	shutil.copy(RESOURCES+'/resources/arrow-up.gif',options.output)
+	shutil.copy(RESOURCES+'/resources/arrow-down.gif',options.output)
+	shutil.copy(RESOURCES+'/resources/arrow-none.gif',options.output)
+	shutil.copy(RESOURCES+'/resources/tabber.js',options.output)
+	shutil.copy(RESOURCES+'/resources/tabber.css',options.output)
+	shutil.copy(RESOURCES+'/resources/jquery.tools.js',options.output)
 	print 'Done'
 except:
 	traceback.print_exc()
