@@ -68,7 +68,7 @@ HTML="""
 		<tr>
 			<th>Index</th>
 			<th>Name</th>
-			<th class="unsortable>Links</th>
+			<th class="unsortable">Links</th>
 			<th>Seasons</th>
 			<th>Year</th>
 			<th>Genre</th>
@@ -149,6 +149,7 @@ class RPCClient(object):
 			update_fields(show,['rating','year','genre'])
 			showid = str(show['tvshowid'])
 			seasons = self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetSeasons\",\"params\":{\"tvshowid\":'+showid+'}, \"id\":1})')
+			update_fields(seasons,['seasons'])
 			data.append({'label':show['label'],'count': len(seasons['seasons']),'rating':'%.2f'%show['rating'],'year':show['year'],'genre':show['genre']})
 		return data
 def filter_for_link(string):
@@ -219,8 +220,8 @@ if movies == None:
 print 'Getting recently added'
 recent_movies = reader.get_recently_added_movies()
 print 'Getting shows'
-#tv_shows = reader.get_tv_shows()
-tv_shows = {}
+tv_shows = reader.get_tv_shows()
+#tv_shows = {}
 try:
 	print 'Writing output to %s' % options.output
 	f = open(options.output+'/index.html','w')
