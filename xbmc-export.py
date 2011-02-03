@@ -12,6 +12,7 @@ RESOURCES=os.path.dirname(os.path.abspath(__file__))
 HTML=""" 
 <html>
 <head>
+	<meta name="generator" content="xbmc-export" />
 	<script type="text/javascript" src="tabber.js"></script> 
 	<script type="text/javascript" src="jquery.tools.js"></script> 
 	<script type="text/javascript" src="sortable.js"></script> 
@@ -108,6 +109,26 @@ TVSHOW="""
 	<td>%s</td>
 </tr>
 """
+class TestClient(object):
+	def __init__(self):
+		pass
+	def get_movies(self):
+		data = {}
+		data['movies'] = []
+		data['movies'].append({'rating': 9.99, u'movieid': 539, 'label': 'Movie', 'genre': 'Comedy / Romance', 'file': '/path/to/Movie.avi', 'year': 2011, 'duration': 1370})
+		data['movies'].append({'rating': 4.99, u'movieid': 539, 'label': 'Movie 2', 'genre': 'Romance', 'file': '/path/to/Movie 2 ripped by someone.avi', 'year': 2000, 'duration': 2402})
+		data['movies'].append({'rating': 9.99, u'movieid': 539, 'label': 'Another Movie', 'genre': 'Comedy', 'file': '/path/to/Another Movie.avi', 'year': 2011, 'duration': 3370})
+		return data
+	def get_recently_added_movies(self):
+		data = {}
+		data['movies'] = []
+		data['movies'].append({'rating': 9.99, u'movieid': 539, 'label': 'Movie', 'genre': 'Comedy / Romance', 'file': '/path/to/Movie.avi', 'year': 2011, 'duration': 300})
+		return data
+	def get_tv_shows(self):
+		data = []
+		data.append({'count': 3, 'rating': '8.80', 'year': 2011, 'genre': u'Comedy', 'label': u'Serie 1'})
+		data.append({'count': 10, 'rating': '9.80', 'year': 2000, 'genre': u'Comedy', 'label': u'Serie 2'})
+		return data
 class RPCClient(object):
 
 	def __init__(self,uri,user,password):
@@ -200,7 +221,11 @@ class Generator(object):
 			series.append(s)
 		return series
 
-usage="""%prog [options]"""
+usage="""%prog [options]
+
+Example (generate results from localhost with anonymous links to CSFD movie db):
+%prog -o /tmp -u xbmc -p xbmc -a -n CSFD -l http://www.csfd.cz/hledani-filmu-hercu-reziseru-ve-filmove-databazi/?search=
+"""
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('-o','--output',dest='output',default='.',metavar='DIR',help='write output to DIR')
 parser.add_option('-u','--username',dest='username',default=None,help='authentication user')
@@ -209,6 +234,7 @@ parser.add_option('-s','--source',dest='source',default='http://localhost:8080/j
 parser.add_option('-l','--links',dest='links',default='http://imdb.com/find?s=all&q=,http://themoviedb.org/search?search=',help='comma-separated list of URIs of services to generate search links for, DEFAULT=%default')
 parser.add_option('-n','--names',dest='names',default='IMDB,MovieDB',help='coma-separated list of --links names, DEFAULT=%default')
 parser.add_option('-a','--anonymize',dest='anonymize',action='store_true',default=False,help='enable anonymous links via http://anonym.to')
+parser.add_option('-t','--test',dest='test',action='store_true',default=False,help='generate testing sample results (-s is omitted)')
 (options,args) = parser.parse_args()
 if not os.path.exists(options.output):
 	print 'Output dir %s does not exist! '%options.output
@@ -228,9 +254,12 @@ except:
 if not len(names) == len(links):
 	print '--links and --names must be comma-separated lists having same sizes'
 	sys.exit(1)
-
+if options.test:
+	print 'Generating test results'
+	reader = TestClient()	
+else:
+	reader = RPCClient(options.source,options.username,options.password)
 print 'Getting movies'
-reader = RPCClient(options.source,options.username,options.password)
 movies = reader.get_movies()
 if movies == None:
 	sys.exit(0)
