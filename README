@@ -5,6 +5,8 @@ xbmc-export-html is a simple python script to generate static HTML page containi
 
 Script requires jsonrpc API to be enabled on your XBMC instance
 
+Take a look at sample output
+http://jezzovo.net/xbmc-export-html-example/
 
 Why to use this?
 
