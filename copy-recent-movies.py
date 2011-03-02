@@ -76,9 +76,10 @@ try:
 					print '   WARN: File \'%s\' does not exist' % file
 				else:
 					dirname = os.path.dirname(file).split('/')[-1]
-					dest = arg[0]+'/'+dirname
+					dest = args[0]+'/'+dirname
 					print ' - Copying - %s to %s'% (file,dest)
-					os.makedirs(os.path.dirname(dest))
+					os.chdir(args[0])
+					os.mkdir(dirname)
 					shutil.copy(file,dest)
 				
 
