@@ -145,3 +145,24 @@ table.sortable tr.sortbottom td {
 	background-color: #ccc;
 	font-weight: bold;
 }
+div.history {
+ border:1px solid #000;
+ padding:5px;
+}
+table.history {
+	border: 1px solid #000;
+}
+tr.history_added td {
+	background:#CCFFBB;
+	text-align: left;
+	padding: 2px 4px 2px 4px;
+	border-style: solid;
+	border-color: #444;
+}
+tr.history_removed td {
+	background: #FF9999;
+	text-align: left;
+	padding: 2px 4px 2px 4px;
+	border-style: solid;
+	border-color: #444;
+}

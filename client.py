@@ -4,7 +4,11 @@
 import urllib2,cookielib,base64,traceback,json,os,optparse,sys,datetime, shutil
 from urllib import urlencode
 from operator import itemgetter, attrgetter
-
+def update_fields(item,fields):
+	for field in fields:
+		if not field in item:
+			item[field]=''
+	return item
 class TestClient(object):
 	def __init__(self):
 		pass
@@ -13,7 +17,7 @@ class TestClient(object):
 		data['movies'] = []
 		data['movies'].append({'rating': 9.99, u'movieid': 539, 'label': 'Movie', 'genre': 'Comedy / Romance', 'file': '/path/to/Movie.avi', 'year': 2011, 'duration': 1370})
 		data['movies'].append({'rating': 4.99, u'movieid': 539, 'label': 'Movie 2', 'genre': 'Romance', 'file': '/path/to/Movie 2 ripped by someone.avi', 'year': 2000, 'duration': 2402})
-		data['movies'].append({'rating': 9.99, u'movieid': 539, 'label': 'Another Movie', 'genre': 'Comedy', 'file': '/path/to/Another Movie.avi', 'year': 2011, 'duration': 3370})
+		data['movies'].append({'rating': 9.99, u'movieid': 540, 'label': 'Another Movie', 'genre': 'Comedy', 'file': '/path/to/Another Movie.avi', 'year': 2011, 'duration': 3370})
 		return data
 	def get_recently_added_movies(self):
 		data = {}
