@@ -15,14 +15,14 @@ class TestClient(object):
 	def get_movies(self):
 		data = {}
 		data['movies'] = []
-		data['movies'].append({'rating': 9.99, u'movieid': 539, 'label': 'Movie', 'genre': 'Comedy / Romance', 'file': '/path/to/Movie.avi', 'year': 2011, 'duration': 1370})
-		data['movies'].append({'rating': 4.99, u'movieid': 539, 'label': 'Movie 2', 'genre': 'Romance', 'file': '/path/to/Movie 2 ripped by someone.avi', 'year': 2000, 'duration': 2402})
-		data['movies'].append({'rating': 9.99, u'movieid': 540, 'label': 'Another Movie', 'genre': 'Comedy', 'file': '/path/to/Another Movie.avi', 'year': 2011, 'duration': 3370})
+		data['movies'].append({'rating': 9.99, u'movieid': 539, 'label': 'Movie', 'genre': 'Comedy / Romance', 'file': '/path/to/Movie.avi', 'year': 2011, 'duration': 1370, 'playcount':0})
+		data['movies'].append({'rating': 4.99, u'movieid': 539, 'label': 'Movie 2', 'genre': 'Romance', 'file': '/path/to/Movie 2 ripped by someone.avi', 'year': 2000, 'duration': 2402,'playcount':'1'})
+		data['movies'].append({'rating': 9.99, u'movieid': 540, 'label': 'Another Movie', 'genre': 'Comedy', 'file': '/path/to/Another Movie.avi', 'year': 2011, 'duration': 3370,'playcount':3})
 		return data
 	def get_recently_added_movies(self):
 		data = {}
 		data['movies'] = []
-		data['movies'].append({'rating': 9.99, u'movieid': 539, 'label': 'Movie', 'genre': 'Comedy / Romance', 'file': '/path/to/Movie.avi', 'year': 2011, 'duration': 300})
+		data['movies'].append({'rating': 9.99, u'movieid': 539, 'label': 'Movie', 'genre': 'Comedy / Romance', 'file': '/path/to/Movie.avi', 'year': 2011, 'duration': 300,'playcount':0})
 		return data
 	def get_tv_shows(self):
 		data = []
@@ -57,16 +57,18 @@ class RPCClient(object):
 			
 	def _decode(self,data):
 		return json.loads(data.decode('utf-8','ignore'))['result']
-	def _get_params(self):
+	def _get_show_params(self):
 		return ' ,\"params\": {\"fields\" :[\"rating\",\"year\",\"genre\",\"duration\"]}'
+	def _get_movie_params(self):
+		return ' ,\"params\": {\"fields\" :[\"rating\",\"year\",\"genre\",\"duration\",\"playcount\"]}'
 	def get_movies(self):
-		return self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetMovies\", \"id\":1'+self._get_params()+'}')
+		return self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetMovies\", \"id\":1'+self._get_movie_params()+'}')
 		
 	def get_recently_added_movies(self):
-		return self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetRecentlyAddedMovies\", \"id\":1'+self._get_params()+'}')
+		return self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetRecentlyAddedMovies\", \"id\":1'+self._get_movie_params()+'}')
 	def get_tv_shows(self):
 		data = []
-		for show in  self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetTVShows\", \"id\":1'+self._get_params()+'}')['tvshows']:
+		for show in  self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetTVShows\", \"id\":1'+self._get_show_params()+'}')['tvshows']:
 			update_fields(show,['rating','year','genre'])
 			showid = str(show['tvshowid'])
 			seasons = self._request('{\"jsonrpc\": \"2.0\", \"method\": \"VideoLibrary.GetSeasons\",\"params\":{\"tvshowid\":'+showid+'}, \"id\":1})')

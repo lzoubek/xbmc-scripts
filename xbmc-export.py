@@ -97,7 +97,7 @@ HISTORY_TAB="""
 MOVIE="""
 <tr class="%s">
 	<td>%i</td>
-	<td><strong>%s</strong></td>
+	<td>%s</td>
 	<td>%s</td>
 	<td>%s</td>
 	<td>%s</td>
@@ -144,10 +144,10 @@ DIFF_TABLE="""
 </table>
 """
 
-def update_fields(item,fields):
+def update_fields(item,fields,default=''):
 	for field in fields:
 		if not field in item:
-			item[field]=''
+			item[field]=default
 	return item
 class HistoryGenerator(object):
 
@@ -263,9 +263,13 @@ class Generator(object):
 			data['movies'] = sorted(data['movies'],key=itemgetter('label'))
 		for movie in data['movies']:
 			movie = update_fields(movie,['year','genre','file','label','rating','duration'])
+			movie = update_fields(movie,['playcount'],'0')
+			movie['title'] = '<strong>%s</strong>' % movie['label']
+			if int(movie['playcount'])>0:
+				movie['title'] = '<i>%s</i>' % movie['label']
 			movie['rating'] = '%.2f' % float(movie['rating'])
 			movie['duration'] = '%i' % (int(movie['duration'])/60)
-			m = MOVIE % (rowclass,len(movies)+1,movie['label'],self._get_links(movie['label']),movie['year'],movie['genre'],movie['rating'],movie['duration'],os.path.basename(movie['file']))
+			m = MOVIE % (rowclass,len(movies)+1,movie['title'],self._get_links(movie['label']),movie['year'],movie['genre'],movie['rating'],movie['duration'],os.path.basename(movie['file']))
 			movies.append(m)
 		return movies
 
