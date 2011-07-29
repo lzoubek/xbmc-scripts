@@ -1,7 +1,8 @@
 xbmc-scripts
-is a set of simple python scripts, which can help you managing, tracking your movie library in XBMC
 ------------
+is a set of simple python scripts, which can help you managing, tracking your movie library in XBMC
 
+------------
 ### xbmc-export.py
 
 generates single HTML page containing
