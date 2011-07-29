@@ -1,6 +1,6 @@
 xbmc-scripts
-------------
 is a set of simple python scripts, which can help you managing, tracking your movie library in XBMC
+------------
 
 ### xbmc-export.py
 
@@ -27,8 +27,9 @@ If you sometimes shutdown your XBMC box and you need to access your media librar
 Script is intented to be a cron job to be up-to-date.
 try : `python xbmc-export.py --help` to get more details
 
-My setup: `xbmc-export -a -n MovieDB -l http://themoviedb.org/search?search= -s http://xbmcbox:8080/jsonrpc -u xbmc -p password -o /var/www/localhost/htdocs`
+My setup: `xbmc-export.py -a -n MovieDB -l http://themoviedb.org/search?search= -s http://xbmcbox:8080/jsonrpc -u xbmc -p password -o /var/www/localhost/htdocs`
 
+------------
 ### copy-recent-movies.py 
 
 connects to XBMC via json and gets list of recently added movies and copies them to specified folder. 
